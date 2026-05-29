@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         🌀 Floating Cool Menu + Pro Storage Editor v2.0
+// @name         🌀 Floating Cool Menu + Pro Storage Editor v2.1
 // @namespace    https://github.com/quoid/userscripts
-// @version      2.0
-// @description  Major redesign: Professional dark glassmorphism UI, completely rebuilt storage editor (tabs + table layout + modern UX), premium floating icon, elegant color palette
+// @version      2.1
+// @description  Premium glossy floating icon matching your attached style (dark metallic + golden glow), refined editor
 // @author       Grok
 // @match        *://*/*
 // @grant        GM.addStyle
@@ -16,16 +16,68 @@
     GM.addStyle(`
         :root { --accent: #6366f1; --bg: #0f172a; --card: #1e2937; --text: #e2e8f0; }
         
+        /* PREMIUM GLOSSY ICON - Matches your attached style */
         #floating-rocket { 
-            position:fixed; bottom:30px; right:30px; width:64px; height:64px; 
-            background: linear-gradient(135deg, #6366f1, #0ea5e9); 
-            color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; 
-            font-size:28px; box-shadow:0 10px 30px rgba(99,102,241,0.5); z-index:999999; 
-            cursor:grab; user-select:none; transition: all .2s cubic-bezier(0.4,0,0.2,1); 
-            border: 3px solid rgba(255,255,255,0.2);
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            width: 68px;
+            height: 68px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 40% 30%, #4a5568 0%, #1a202c 50%, #0f172a 100%);
+            box-shadow: 
+                0 0 0 8px #111827,
+                0 0 0 12px #1f2937,
+                0 25px 50px -12px rgba(0, 0, 0, 0.8),
+                inset 0 8px 16px rgba(255,255,255,0.25),
+                inset 0 -12px 20px rgba(0,0,0,0.6),
+                0 0 35px rgba(251, 191, 36, 0.7);
+            border: 3px solid #111827;
+            z-index: 999999;
+            cursor: grab;
+            user-select: none;
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            color: #e2e8f0;
+            overflow: hidden;
         }
-        #floating-rocket:hover { transform: scale(1.1) rotate(5deg); box-shadow:0 15px 40px rgba(99,102,241,0.6); }
-        #floating-rocket:active { transform:scale(0.95); }
+        #floating-rocket::before {
+            content: '';
+            position: absolute;
+            top: 12%;
+            left: 18%;
+            width: 28%;
+            height: 28%;
+            background: radial-gradient(circle, rgba(255,255,255,0.35) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        #floating-rocket::after {
+            content: '';
+            position: absolute;
+            bottom: -8%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70%;
+            height: 18%;
+            background: linear-gradient(transparent, rgba(251,191,36,0.25));
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        #floating-rocket:hover {
+            transform: scale(1.08);
+            box-shadow: 
+                0 0 0 8px #111827,
+                0 0 0 12px #1f2937,
+                0 30px 60px -15px rgba(0,0,0,0.9),
+                inset 0 8px 16px rgba(255,255,255,0.3),
+                inset 0 -12px 20px rgba(0,0,0,0.7),
+                0 0 45px rgba(251, 191, 36, 0.85);
+        }
+        #floating-rocket:active { transform: scale(0.95); }
 
         #floating-menu, #storage-editor {
             position:fixed; background: rgba(15,23,42,0.95); border:1px solid #334155;
@@ -43,7 +95,6 @@
         .menu-close, .editor-close { position:absolute; top:16px; right:18px; font-size:26px; cursor:pointer; color:#94a3b8; transition:color .2s; }
         .menu-close:hover, .editor-close:hover { color:#f87171; }
 
-        /* Professional Storage Editor */
         .editor-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
         .editor-title { font-size:20px; font-weight:600; color:#f1f5f9; }
         .tab-bar { display:flex; background:#1e2937; border-radius:12px; padding:4px; gap:4px; }
@@ -75,7 +126,7 @@
 
     const rocket = document.createElement('div'); 
     rocket.id = 'floating-rocket'; 
-    rocket.innerHTML = '⚙️';  // Premium professional icon
+    rocket.innerHTML = ' ';  // Pure glossy orb - no emoji needed
     const menu = document.createElement('div'); menu.id = 'floating-menu';
     const editor = document.createElement('div'); editor.id = 'storage-editor';
 
@@ -94,7 +145,7 @@
     editor.innerHTML = `
         <span class="editor-close">✕</span>
         <div class="editor-header">
-            <div class="editor-title">Storage Editor <span style="font-size:12px; color:#64748b;">v2.0</span></div>
+            <div class="editor-title">Storage Editor <span style="font-size:12px; color:#64748b;">v2.1</span></div>
         </div>
         <div class="tab-bar">
             <div class="tab active" data-tab="cookies">🍪 Cookies <span class="count-badge" id="cookie-count">0</span></div>
@@ -112,8 +163,7 @@
     document.documentElement.appendChild(menu);
     document.documentElement.appendChild(editor);
 
-    // Draggable logic (unchanged, improved slightly)
-    function makeDraggable(el) { /* same as before */ 
+    function makeDraggable(el) {
         let isDragging = false, startX, startY, initialLeft, initialTop;
         const start = (e) => {
             isDragging = false;
@@ -162,7 +212,6 @@
         }
     }
 
-    // === COMPLETELY REDESIGNED STORAGE EDITOR ===
     let currentTab = 'cookies';
     let currentFilter = '';
 
@@ -170,11 +219,9 @@
         currentFilter = filter;
         menu.style.display = 'none';
         editor.style.display = 'flex';
-        
         const content = document.getElementById('editor-content');
         renderTabContent(content);
         
-        // Tab switching
         document.querySelectorAll('.tab').forEach(tab => {
             tab.onclick = () => {
                 document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -184,7 +231,6 @@
             };
         });
 
-        // Global buttons
         document.getElementById('export-all').onclick = exportAll;
         document.getElementById('import-all').onclick = importAll;
     }
@@ -219,7 +265,6 @@
             );
         }
 
-        // Update counts
         document.getElementById('cookie-count').textContent = document.cookie ? document.cookie.split(';').length : 0;
         document.getElementById('local-count').textContent = localStorage.length;
         document.getElementById('session-count').textContent = sessionStorage.length;
@@ -251,7 +296,6 @@
             html += `</tbody></table>`;
         }
 
-        // Add new form
         html += `<div class="add-form">
             <input id="new-key" placeholder="New key" style="flex:1.2">
             <input id="new-value" placeholder="Value" style="flex:2">
@@ -260,7 +304,6 @@
 
         container.innerHTML = html;
 
-        // Search listener
         const search = document.getElementById('search-input');
         if (search) search.oninput = () => {
             currentFilter = search.value.toLowerCase();
@@ -268,7 +311,6 @@
         };
     }
 
-    // Global functions for editor actions
     window.copyItem = function(btn) {
         const row = btn.closest('tr');
         const key = row.dataset.key;
@@ -277,7 +319,6 @@
         if (type === 'cookies') value = getCookieValue(key);
         else if (type === 'local') value = localStorage.getItem(key);
         else value = sessionStorage.getItem(key);
-        
         navigator.clipboard.writeText(value || '').then(() => alert('✅ Copied!'));
     };
 
@@ -320,13 +361,9 @@
         const key = keyInput.value.trim();
         const value = valueInput.value;
         
-        if (currentTab === 'cookies') {
-            document.cookie = `${key}=${encodeURIComponent(value)}; path=/`;
-        } else if (currentTab === 'local') {
-            localStorage.setItem(key, value);
-        } else if (currentTab === 'session') {
-            sessionStorage.setItem(key, value);
-        }
+        if (currentTab === 'cookies') document.cookie = `${key}=${encodeURIComponent(value)}; path=/`;
+        else if (currentTab === 'local') localStorage.setItem(key, value);
+        else if (currentTab === 'session') sessionStorage.setItem(key, value);
         
         keyInput.value = '';
         valueInput.value = '';
@@ -365,7 +402,6 @@
         } catch(e) { alert('❌ Invalid JSON'); }
     }
 
-    // Main menu buttons (same functionality, better styling)
     document.getElementById('btn-dark').addEventListener('click', () => {
         const isDark = document.documentElement.classList.toggle('dark-mode');
         document.documentElement.style.filter = isDark ? 'invert(1) hue-rotate(180deg)' : '';
@@ -399,5 +435,5 @@
 
     document.addEventListener('keydown', e => { if (e.key === 'Escape') { menu.style.display = 'none'; editor.style.display = 'none'; } });
 
-    console.log('%c🌀 Floating Cool Menu v2.0 — Professional redesign complete! ✅', 'color:#6366f1; font-size:13px');
+    console.log('%c🌀 Floating Cool Menu v2.1 — Premium glossy icon matching your style! ✅', 'color:#f59e0b; font-size:13px');
 })();
