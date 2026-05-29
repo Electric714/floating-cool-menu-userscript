@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         🚀 Floating Cool Menu + Pro Storage Editor v2.9
+// @name         🚀 Floating Cool Menu + Pro Storage Editor v3.0
 // @namespace    https://github.com/quoid/userscripts
-// @version      2.9
-// @description  Custom golden glowing icon (smaller 36px, matches your uploaded design). Tap now reliably opens menu. All fixes preserved.
+// @version      3.0
+// @description  Custom floating icon button matching the new attached design (rounded square with orange glow, black circle, smile arc + golden dunes/waves SVG). Tap now reliably opens menu. All fixes preserved.
 // @author       Grok + Electric714
 // @match        *://*/*
 // @grant        GM.addStyle
@@ -19,7 +19,7 @@
         :root { --accent: #6366f1; --bg: #0f172a; --card: #1e2937; --text: #e2e8f0; }
         
         #floating-rocket { 
-            position: fixed !important; bottom: 28px !important; right: 28px !important; width: 36px !important; height: 36px !important; border-radius: 50% !important;
+            position: fixed !important; bottom: 28px !important; right: 28px !important; width: 36px !important; height: 36px !important; border-radius: 10px !important;
             background: 
                 radial-gradient(circle at 40% 30%, #4a5568 0%, #1a202c 50%, #0f172a 100%),
                 linear-gradient(180deg, rgba(251,191,36,0.15) 0%, transparent 60%) !important;
@@ -101,7 +101,20 @@
         try {
             const rocket = document.createElement('div');
             rocket.id = 'floating-rocket';
-            rocket.innerHTML = '🌙';  /* Moon-like icon to better match your design */
+            rocket.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 100 100" style="filter: drop-shadow(0 0 3px #fbbf24) drop-shadow(0 0 8px #f59e0b);">
+  <!-- Outer dark circle matching attached icon -->
+  <circle cx="50" cy="50" r="44" fill="#111827" stroke="#334155" stroke-width="5"/>
+  <!-- Subtle inner glow ring -->
+  <circle cx="50" cy="50" r="38" fill="none" stroke="#1e2937" stroke-width="3"/>
+  <!-- Signature smile arc (white/glow) -->
+  <path d="M26 46 Q50 68 74 46" fill="none" stroke="#f1f5f9" stroke-width="5.5" stroke-linecap="round"/>
+  <!-- Golden dunes / waves at bottom (layered like attached image) -->
+  <path d="M12 68 Q28 80 42 68 Q58 82 72 68 Q85 80 92 70" fill="none" stroke="#fbbf24" stroke-width="8" stroke-linecap="round"/>
+  <path d="M10 76 Q25 88 40 76 Q55 90 70 76 Q82 88 92 80" fill="none" stroke="#f59e0b" stroke-width="6" stroke-linecap="round" opacity="0.85"/>
+  <path d="M14 83 Q27 92 41 83 Q54 94 67 83" fill="none" stroke="#d97706" stroke-width="4.5" stroke-linecap="round" opacity="0.75"/>
+  <!-- Tiny highlight sparkle -->
+  <circle cx="38" cy="32" r="2.5" fill="#bae6fd" opacity="0.7"/>
+</svg>`;
 
             const menu = document.createElement('div');
             menu.id = 'floating-menu';
@@ -123,7 +136,7 @@
 
             editor.innerHTML = `
                 <span class="editor-close">✕</span>
-                <div class="editor-header"><div class="editor-title">Storage Editor <span style="font-size:11px;color:#64748b">v2.9</span></div></div>
+                <div class="editor-header"><div class="editor-title">Storage Editor <span style="font-size:11px;color:#64748b">v3.0</span></div></div>
                 <div class="tab-bar">
                     <div class="tab active" data-tab="cookies">🍪 Cookies <span class="count-badge" id="cookie-count">0</span></div>
                     <div class="tab" data-tab="local">📦 local <span class="count-badge" id="local-count">0</span></div>
@@ -299,7 +312,7 @@
             window.copyItem = btn => { const row=btn.closest('tr'); const key=row.dataset.key; const type=row.dataset.type; let val=''; if(type==='cookies')val=getCookieValue(key); else if(type==='local')val=localStorage.getItem(key); else val=sessionStorage.getItem(key); navigator.clipboard.writeText(val||'').then(()=>alert('✅ Copied')); };
             window.editItem = btn => { const row=btn.closest('tr'); const key=row.dataset.key; const type=row.dataset.type; let val=''; if(type==='cookies')val=getCookieValue(key); else if(type==='local')val=localStorage.getItem(key); else val=sessionStorage.getItem(key); const nv=prompt('Edit '+key, val); if(nv!==null){ if(type==='cookies')document.cookie=`${key}=${encodeURIComponent(nv)};path=/`; else if(type==='local')localStorage.setItem(key,nv); else sessionStorage.setItem(key,nv); renderTabContent(document.getElementById('editor-content')); } };
             window.deleteItem = btn => { if(!confirm('Delete?'))return; const row=btn.closest('tr'); const key=row.dataset.key; const type=row.dataset.type; if(type==='cookies')document.cookie=`${key}=;expires=Thu,01 Jan 1970;path=/`; else if(type==='local')localStorage.removeItem(key); else sessionStorage.removeItem(key); renderTabContent(document.getElementById('editor-content')); };
-            window.addNewItem = () => { const k=document.getElementById('new-key').value.trim(); const v=document.getElementById('new-value').value; if(!k)return; if(currentTab==='cookies')document.cookie=`${k}=${encodeURIComponent(v)};path=/`; else if(currentTab==='local')localStorage.setItem(k,v); else sessionStorage.setItem(k,v); document.getElementById('new-key').value=''; document.getElementById('new-value').value=''; renderTabContent(document.getElementById('editor-content')); };
+            window.addNewItem = () => { const k=document.getElementById('new-key').value.trim(); const v=document.getElementById('new-value').value; if(!k)return; if(currentTab==='cookies')document.cookie=`${k}=${encodeURIComponent(v)};path=/`; else if(type==='local')localStorage.setItem(k,v); else sessionStorage.setItem(k,v); document.getElementById('new-key').value=''; document.getElementById('new-value').value=''; renderTabContent(document.getElementById('editor-content')); };
 
             function getCookieValue(n){ const m=document.cookie.match(new RegExp('(^| )'+n+'=([^;]+)')); return m?decodeURIComponent(m[2]):''; }
             function exportAll(){ const d={cookies:document.cookie?document.cookie.split(';').map(c=>{const[k,...v]=c.trim().split('=');return{key:k.trim(),value:decodeURIComponent(v.join('='))};}):[],localStorage:Object.fromEntries([...Array(localStorage.length)].map((_,i)=>{const k=localStorage.key(i);return[k,localStorage.getItem(k)]})),sessionStorage:Object.fromEntries([...Array(sessionStorage.length)].map((_,i)=>{const k=sessionStorage.key(i);return[k,sessionStorage.getItem(k)]}))}; const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:'application/json'})); a.download='backup.json'; a.click(); alert('✅ Exported'); }
@@ -321,7 +334,7 @@
 
             document.addEventListener('keydown', e => { if(e.key==='Escape'){ menu.style.display='none'; editor.style.display='none'; menuOpen=false; } });
 
-            console.log('%c🚀 Floating Cool Menu v2.9 — Golden custom icon + reliable tap ✅', 'color:#22c55e;font-size:12px');
+            console.log('%c🚀 Floating Cool Menu v3.0 — New attached icon design (SVG smile + golden dunes) + reliable tap ✅', 'color:#22c55e;font-size:12px');
         } catch(e) {
             console.error('%c🚀 Floating Menu ERROR:', 'color:#ef4444', e);
         }
