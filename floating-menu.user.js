@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         🌀 Floating Cool Menu + Pro Storage Editor v2.2
+// @name         🌀 Floating Cool Menu + Pro Storage Editor v2.3
 // @namespace    https://github.com/quoid/userscripts
-// @version      2.2
-// @description  Fixed: smaller icon, proper drag (menu follows logic + no background scroll), menu stays open after most buttons, fixed storage editor button
+// @version      2.3
+// @description  Fixed: dragging rocket no longer moves background, added View Page Source button
 // @author       Grok
 // @match        *://*/*
 // @grant        GM.addStyle
@@ -21,7 +21,7 @@
             background: radial-gradient(circle at 40% 30%, #4a5568 0%, #1a202c 50%, #0f172a 100%);
             box-shadow: 0 0 0 6px #111827, 0 0 0 10px #1f2937, 0 20px 40px -10px rgba(0,0,0,0.8),
                         inset 0 6px 12px rgba(255,255,255,0.25), inset 0 -10px 16px rgba(0,0,0,0.6), 0 0 28px rgba(251,191,36,0.65);
-            border: 2.5px solid #111827; z-index: 999999; cursor: grab; user-select: none;
+            border: 2.5px solid #111827; z-index: 999999; cursor: grab; user-select: none; touch-action: none;
             transition: transform .18s cubic-bezier(0.4,0,0.2,1), box-shadow .18s;
             display: flex; align-items: center; justify-content: center; font-size: 20px; color: #e2e8f0; overflow: hidden;
         }
@@ -78,12 +78,13 @@
         <button class="menu-btn" id="btn-copy">🔗 Copy Page URL</button>
         <button class="menu-btn" id="btn-fun">🎨 Random Background</button>
         <button class="menu-btn" id="btn-hide">🙈 Hide Images</button>
+        <button class="menu-btn" id="btn-source">📄 View Page Source</button>
         <button class="menu-btn" id="btn-editor" style="background:#6366f1;color:white;border:none;margin-top:6px;">🍪 Edit Cookies & Storage</button>
     `;
 
     editor.innerHTML = `
         <span class="editor-close">✕</span>
-        <div class="editor-header"><div class="editor-title">Storage Editor <span style="font-size:11px;color:#64748b">v2.2</span></div></div>
+        <div class="editor-header"><div class="editor-title">Storage Editor <span style="font-size:11px;color:#64748b">v2.3</span></div></div>
         <div class="tab-bar">
             <div class="tab active" data-tab="cookies">🍪 Cookies <span class="count-badge" id="cookie-count">0</span></div>
             <div class="tab" data-tab="local">📦 local <span class="count-badge" id="local-count">0</span></div>
@@ -100,7 +101,7 @@
     document.documentElement.appendChild(menu);
     document.documentElement.appendChild(editor);
 
-    // IMPROVED DRAG - no background scroll, better rocket tap vs drag
+    // STRONG DRAG PROTECTION - no background movement at all
     function makeDraggable(el) {
         let isDragging = false, startX, startY, initialLeft, initialTop;
         const start = (e) => {
@@ -112,6 +113,7 @@
             
             const drag = (ev) => {
                 ev.preventDefault();
+                ev.stopImmediatePropagation();
                 const cx = ev.type.includes('mouse') ? ev.clientX : ev.touches[0].clientX;
                 const cy = ev.type.includes('mouse') ? ev.clientY : ev.touches[0].clientY;
                 const dx = cx - startX, dy = cy - startY;
@@ -133,12 +135,12 @@
                 }
             };
             
-            document.addEventListener('mousemove', drag);
+            document.addEventListener('mousemove', drag, { passive: false });
             document.addEventListener('touchmove', drag, { passive: false });
             document.addEventListener('mouseup', stop);
             document.addEventListener('touchend', stop);
         };
-        el.addEventListener('mousedown', start);
+        el.addEventListener('mousedown', start, { passive: false });
         el.addEventListener('touchstart', start, { passive: false });
     }
 
@@ -158,7 +160,6 @@
         }
     }
 
-    // Storage editor (fixed)
     let currentTab = 'cookies';
     let currentFilter = '';
 
@@ -234,13 +235,20 @@
     function exportAll(){ const d={cookies:document.cookie?document.cookie.split(';').map(c=>{const[k,...v]=c.trim().split('=');return{key:k.trim(),value:decodeURIComponent(v.join('='))};}):[],localStorage:Object.fromEntries([...Array(localStorage.length)].map((_,i)=>{const k=localStorage.key(i);return[k,localStorage.getItem(k)]})),sessionStorage:Object.fromEntries([...Array(sessionStorage.length)].map((_,i)=>{const k=sessionStorage.key(i);return[k,sessionStorage.getItem(k)]}))}; const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:'application/json'})); a.download='backup.json'; a.click(); alert('✅ Exported'); }
     function importAll(){ const j=prompt('Paste JSON:'); if(!j)return; try{ const d=JSON.parse(j); if(d.cookies)d.cookies.forEach(c=>document.cookie=`${c.key}=${encodeURIComponent(c.value)};path=/`); if(d.localStorage)Object.keys(d.localStorage).forEach(k=>localStorage.setItem(k,d.localStorage[k])); if(d.sessionStorage)Object.keys(d.sessionStorage).forEach(k=>sessionStorage.setItem(k,d.sessionStorage[k])); alert('✅ Imported'); renderTabContent(document.getElementById('editor-content')); }catch(e){alert('❌ Bad JSON');} }
 
-    // BUTTONS - menu stays open (except refresh & copy if desired)
+    // BUTTONS
     document.getElementById('btn-dark').addEventListener('click', () => { const d=document.documentElement.classList.toggle('dark-mode'); document.documentElement.style.filter = d ? 'invert(1) hue-rotate(180deg)' : ''; });
     document.getElementById('btn-top').addEventListener('click', () => window.scrollTo({top:0,behavior:'smooth'}));
     document.getElementById('btn-refresh').addEventListener('click', () => { location.reload(true); menu.style.display='none'; });
     document.getElementById('btn-copy').addEventListener('click', () => { navigator.clipboard.writeText(location.href).then(()=>alert('✅ Copied')).catch(()=>{const t=document.createElement('textarea');t.value=location.href;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);alert('✅ Copied');}); menu.style.display='none'; });
     document.getElementById('btn-fun').addEventListener('click', () => { const c=['#6366f1','#0ea5e9','#22c55e','#f59e0b','#ec4899','#8b5cf6'][Math.floor(Math.random()*6)]; document.documentElement.style.setProperty('background-color',c,'important'); document.body.style.setProperty('background-color',c,'important'); document.body.style.minHeight='100vh'; });
     document.getElementById('btn-hide').addEventListener('click', () => { document.querySelectorAll('img,picture,video,[style*="background-image"]').forEach(el=>el.style.display=el.style.display==='none'?'':'none'); });
+    
+    // NEW: View Page Source
+    document.getElementById('btn-source').addEventListener('click', () => {
+        window.open('view-source:' + location.href, '_blank');
+        menu.style.display = 'none';
+    });
+    
     document.getElementById('btn-editor').addEventListener('click', () => showEditor());
 
     menu.querySelector('.menu-close').addEventListener('click', () => menu.style.display = 'none');
@@ -248,5 +256,5 @@
 
     document.addEventListener('keydown', e => { if(e.key==='Escape'){ menu.style.display='none'; editor.style.display='none'; } });
 
-    console.log('%c🌀 Floating Cool Menu v2.2 — All issues fixed! ✅', 'color:#22c55e;font-size:12px');
+    console.log('%c🌀 Floating Cool Menu v2.3 — Dragging fixed + View Source added! ✅', 'color:#22c55e;font-size:12px');
 })();
