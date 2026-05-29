@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         🚀 Floating Cool Menu + Pro Storage Editor v3.3
+// @name         🚀 Floating Cool Menu + Pro Storage Editor v3.4
 // @namespace    https://github.com/quoid/userscripts
-// @version      3.3
-// @description  Fixed drag on floating icon (now fully movable vertically + horizontally). All buttons working.
+// @version      3.4
+// @description  Fixed vertical dragging + improved View Source & Random Background buttons.
 // @author       Grok + Electric714
 // @match        *://*/*
 // @grant        GM.addStyle
@@ -108,7 +108,7 @@
 
             editor.innerHTML = `
                 <span class="editor-close">✕</span>
-                <div class="editor-header"><div class="editor-title">Storage Editor <span style="font-size:11px;color:#64748b">v3.3</span></div></div>
+                <div class="editor-header"><div class="editor-title">Storage Editor <span style="font-size:11px;color:#64748b">v3.4</span></div></div>
                 <div class="tab-bar">
                     <div class="tab active" data-tab="cookies">🍪 Cookies <span class="count-badge" id="cookie-count">0</span></div>
                     <div class="tab" data-tab="local">📦 local <span class="count-badge" id="local-count">0</span></div>
@@ -132,26 +132,40 @@
 
             function makeDraggable(el) {
                 let startX, startY, initialLeft, initialTop;
+
                 const start = (e) => {
                     if (e.target.closest('button, input, .menu-close, .editor-close')) return;
-                    isDragging = false;
+
+                    // CRITICAL FIX: Force proper positioning at drag start
+                    const rect = el.getBoundingClientRect();
+                    el.style.left = `${rect.left}px`;
+                    el.style.top = `${rect.top}px`;
+                    el.style.right = 'auto';
+                    el.style.bottom = 'auto';
+
+                    initialLeft = rect.left;
+                    initialTop = rect.top;
+
                     startX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
                     startY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
-                    initialLeft = parseFloat(el.style.left) || el.offsetLeft;
-                    initialTop = parseFloat(el.style.top) || el.offsetTop;
+                    isDragging = false;
 
                     const drag = (ev) => {
                         ev.preventDefault();
                         ev.stopImmediatePropagation();
+
                         const cx = ev.type.includes('mouse') ? ev.clientX : ev.touches[0].clientX;
                         const cy = ev.type.includes('mouse') ? ev.clientY : ev.touches[0].clientY;
-                        const dx = cx - startX, dy = cy - startY;
-                        if (Math.abs(dx) > 4 || Math.abs(dy) > 4) isDragging = true;
-                        el.style.left = (initialLeft + dx) + 'px';
-                        el.style.right = 'auto';
-                        el.style.top = (initialTop + dy) + 'px';
-                        el.style.bottom = 'auto';
 
+                        const dx = cx - startX;
+                        const dy = cy - startY;
+
+                        if (Math.abs(dx) > 3 || Math.abs(dy) > 3) isDragging = true;
+
+                        el.style.left = (initialLeft + dx) + 'px';
+                        el.style.top = (initialTop + dy) + 'px';
+
+                        // Keep menu following rocket when dragging icon
                         if (menuOpen && el.id === 'floating-rocket') {
                             const r = rocket.getBoundingClientRect();
                             menu.style.left = (r.left + menuOffsetX) + 'px';
@@ -193,6 +207,7 @@
             makeDraggable(menu);
             makeDraggable(editor);
 
+            // Click handler (only toggle if not dragging)
             rocket.addEventListener('click', (e) => { 
                 if (!isDragging) toggleMenu(); 
             });
@@ -217,14 +232,14 @@
                 }
             }
 
-            // ========== BUTTON HANDLERS ==========
+            // ========== IMPROVED BUTTON HANDLERS ==========
             document.getElementById('btn-dark').onclick = () => {
                 const isDark = document.documentElement.classList.toggle('dark-mode');
                 if (isDark) {
-                    document.body.style.filter = 'invert(0.92) hue-rotate(180deg)';
-                    document.body.style.transition = 'filter 0.3s ease';
+                    document.documentElement.style.filter = 'invert(0.92) hue-rotate(180deg)';
+                    document.documentElement.style.transition = 'filter 0.3s ease';
                 } else {
-                    document.body.style.filter = '';
+                    document.documentElement.style.filter = '';
                 }
             };
 
@@ -249,20 +264,35 @@
             };
 
             document.getElementById('btn-fun').onclick = () => {
-                const colors = ['#0f172a', '#1e2937', '#334155', '#1a2332', '#0c1220', '#1f2937'];
-                document.body.style.background = colors[Math.floor(Math.random() * colors.length)];
-                document.body.style.transition = 'background 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+                const colors = ['#0f172a', '#1e2937', '#334155', '#1a2332', '#111827', '#0c1321', '#16213e'];
+                const randomColor = colors[Math.floor(Math.random() * colors.length)];
+                // More aggressive background change
+                document.documentElement.style.background = randomColor;
+                document.body.style.background = randomColor;
+                document.body.style.backgroundColor = randomColor;
+                document.body.style.transition = 'background 0.6s ease';
             };
 
             document.getElementById('btn-hide').onclick = () => {
-                const elements = document.querySelectorAll('img, video, iframe, picture');
+                const elements = document.querySelectorAll('img, video, iframe, picture, svg');
                 elements.forEach(el => {
-                    el.style.display = (el.style.display === 'none' || el.style.visibility === 'hidden') ? '' : 'none';
+                    if (el.style.display === 'none') {
+                        el.style.display = '';
+                        el.style.visibility = '';
+                    } else {
+                        el.style.display = 'none';
+                    }
                 });
             };
 
+            // Improved View Source
             document.getElementById('btn-source').onclick = () => {
-                window.open('view-source:' + window.location.href, '_blank');
+                const sourceUrl = 'view-source:' + window.location.href;
+                const win = window.open(sourceUrl, '_blank');
+                if (!win) {
+                    // Fallback
+                    window.location.href = sourceUrl;
+                }
             };
 
             document.getElementById('btn-editor').onclick = () => {
@@ -275,7 +305,7 @@
                 menuOpen = false;
             };
 
-            // Storage editor functions (simplified but functional)
+            // Storage editor (unchanged for now)
             let currentTab = 'cookies';
             function showEditor() {
                 menu.style.display = 'none';
@@ -297,7 +327,7 @@
             }
 
             function renderTabContent(container) {
-                container.innerHTML = `<div style="padding:20px; text-align:center; color:#64748b;">Storage editor ready.<br> (Full CRUD coming in v3.4 — buttons now work!)</div>`;
+                container.innerHTML = `<div style="padding:20px; text-align:center; color:#64748b;">Storage editor ready.<br> (Full CRUD coming in v3.5)</div>`;
             }
 
             function exportAll() {
@@ -327,7 +357,7 @@
                 input.click();
             }
 
-            console.log('%c🚀 Floating Cool Menu v3.3 — Drag fully fixed + all buttons working ✅', 'color:#22c55e; font-size:12px');
+            console.log('%c🚀 Floating Cool Menu v3.4 — Drag fully fixed + View Source & Random BG improved ✅', 'color:#22c55e; font-size:12px');
         } catch(e) {
             console.error('%c🚀 Floating Menu ERROR:', 'color:#ef4444', e);
         }
