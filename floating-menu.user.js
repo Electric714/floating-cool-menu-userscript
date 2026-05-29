@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         🚀 Floating Cool Menu + Pro Storage Editor v3.2
+// @name         🚀 Floating Cool Menu + Pro Storage Editor v3.3
 // @namespace    https://github.com/quoid/userscripts
-// @version      3.2
-// @description  ALL BUTTONS NOW WORKING + drag/touch reliability + beautiful UI. Fixed missing event listeners.
+// @version      3.3
+// @description  Fixed drag on floating icon (now fully movable vertically + horizontally). All buttons working.
 // @author       Grok + Electric714
 // @match        *://*/*
 // @grant        GM.addStyle
@@ -108,7 +108,7 @@
 
             editor.innerHTML = `
                 <span class="editor-close">✕</span>
-                <div class="editor-header"><div class="editor-title">Storage Editor <span style="font-size:11px;color:#64748b">v3.2</span></div></div>
+                <div class="editor-header"><div class="editor-title">Storage Editor <span style="font-size:11px;color:#64748b">v3.3</span></div></div>
                 <div class="tab-bar">
                     <div class="tab active" data-tab="cookies">🍪 Cookies <span class="count-badge" id="cookie-count">0</span></div>
                     <div class="tab" data-tab="local">📦 local <span class="count-badge" id="local-count">0</span></div>
@@ -144,7 +144,7 @@
                         ev.preventDefault();
                         ev.stopImmediatePropagation();
                         const cx = ev.type.includes('mouse') ? ev.clientX : ev.touches[0].clientX;
-                        const cy = ev.type.includes('mouse') ? ev.clientY : e.touches[0].clientY;
+                        const cy = ev.type.includes('mouse') ? ev.clientY : ev.touches[0].clientY;
                         const dx = cx - startX, dy = cy - startY;
                         if (Math.abs(dx) > 4 || Math.abs(dy) > 4) isDragging = true;
                         el.style.left = (initialLeft + dx) + 'px';
@@ -217,7 +217,7 @@
                 }
             }
 
-            // ========== THE FIX: ALL BUTTONS NOW WIRED UP ==========
+            // ========== BUTTON HANDLERS ==========
             document.getElementById('btn-dark').onclick = () => {
                 const isDark = document.documentElement.classList.toggle('dark-mode');
                 if (isDark) {
@@ -297,7 +297,7 @@
             }
 
             function renderTabContent(container) {
-                container.innerHTML = `<div style="padding:20px; text-align:center; color:#64748b;">Storage editor ready.<br> (Full CRUD coming in v3.3 — buttons now work!)</div>`;
+                container.innerHTML = `<div style="padding:20px; text-align:center; color:#64748b;">Storage editor ready.<br> (Full CRUD coming in v3.4 — buttons now work!)</div>`;
             }
 
             function exportAll() {
@@ -327,7 +327,7 @@
                 input.click();
             }
 
-            console.log('%c🚀 Floating Cool Menu v3.2 — ALL BUTTONS FIXED & WORKING ✅', 'color:#22c55e; font-size:12px');
+            console.log('%c🚀 Floating Cool Menu v3.3 — Drag fully fixed + all buttons working ✅', 'color:#22c55e; font-size:12px');
         } catch(e) {
             console.error('%c🚀 Floating Menu ERROR:', 'color:#ef4444', e);
         }
