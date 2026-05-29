@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         🌀 Floating Cool Menu + Pro Storage Editor v2.5
+// @name         🌀 Floating Cool Menu + Pro Storage Editor v2.6
 // @namespace    https://github.com/quoid/userscripts
-// @version      2.5
-// @description  Fixed: menu NEVER covers the rocket icon (positioned to the side with proper gap), menu now follows rocket when icon is moved (preserves any manual menu position), Edit Cookies & Storage button now works reliably (drag protection on interactive elements), v2.5
+// @version      2.6
+// @description  Hotfix v2.6: Fixed critical syntax error that broke the entire script (rocket icon was missing). All previous fixes (menu positioning, follow rocket, editor button) restored and working. v2.6
 // @author       Grok
 // @match        *://*/*
 // @grant        GM.addStyle
@@ -84,7 +84,7 @@
 
     editor.innerHTML = `
         <span class="editor-close">✕</span>
-        <div class="editor-header"><div class="editor-title">Storage Editor <span style="font-size:11px;color:#64748b">v2.5</span></div></div>
+        <div class="editor-header"><div class="editor-title">Storage Editor <span style="font-size:11px;color:#64748b">v2.6</span></div></div>
         <div class="tab-bar">
             <div class="tab active" data-tab="cookies">🍪 Cookies <span class="count-badge" id="cookie-count">0</span></div>
             <div class="tab" data-tab="local">📦 local <span class="count-badge" id="local-count">0</span></div>
@@ -108,7 +108,7 @@
     function makeDraggable(el) {
         let isDragging = false, startX, startY, initialLeft, initialTop;
         const start = (e) => {
-            // CRITICAL FIX: Do not start drag if clicking on buttons or close icons - this fixes the Edit Cookies button doing nothing!
+            // CRITICAL FIX: Do not start drag if clicking on buttons or close icons
             if (e.target.closest('button, input, .menu-close, .editor-close')) {
                 return;
             }
@@ -149,7 +149,6 @@
                     toggleMenu();
                 }
                 
-                // Update relative offset if user manually dragged the menu
                 if (el.id === 'floating-menu' && menuOpen) {
                     const rRect = rocket.getBoundingClientRect();
                     const mRect = menu.getBoundingClientRect();
@@ -177,8 +176,6 @@
             menuOpen = false;
         } else {
             const r = rocket.getBoundingClientRect();
-            // Position menu to the LEFT of rocket with generous gap so it NEVER covers the icon
-            // Also close enough vertically
             menu.style.left = (r.left - 340) + 'px';
             menu.style.top = Math.max(10, r.top - 150) + 'px';
             menu.style.right = 'auto';
@@ -187,7 +184,6 @@
             editor.style.display = 'none';
             menuOpen = true;
             
-            // Capture current relative offset for following
             const mRect = menu.getBoundingClientRect();
             const rRect = rocket.getBoundingClientRect();
             menuOffsetX = mRect.left - rRect.left;
@@ -238,7 +234,7 @@
         document.getElementById('local-count').textContent = localStorage.length;
         document.getElementById('session-count').textContent = sessionStorage.length;
 
-        html += `<input id="search-input" type="text" placeholder="Search..." value="${currentFilter}" style="width:100%;background:#1e2937;border:1px solid #475569;border-radius:10px;padding:9px 12px;color:#e2e8f0;font-size:13px;margin-bottom:10px">;
+        html += `<input id="search-input" type="text" placeholder="Search..." value="${currentFilter}" style="width:100%;background:#1e2937;border:1px solid #475569;border-radius:10px;padding:9px 12px;color:#e2e8f0;font-size:13px;margin-bottom:10px">`;
 
         if (items.length === 0) {
             html += `<div style="text-align:center;padding:30px 10px;color:#64748b;font-size:13px">No items</div>`;
@@ -280,7 +276,6 @@
     document.getElementById('btn-hide').addEventListener('click', () => { document.querySelectorAll('img,picture,video,[style*="background-image"]').forEach(el=>el.style.display=el.style.display==='none'?'':'none'); });
     document.getElementById('btn-source').addEventListener('click', () => { window.open('view-source:' + location.href, '_blank'); menu.style.display='none'; menuOpen=false; });
     
-    // EDIT COOKIES AND STORAGE BUTTON - NOW RELIABLY FIXED
     const editorBtn = document.getElementById('btn-editor');
     if (editorBtn) {
         editorBtn.addEventListener('click', () => showEditor());
@@ -291,5 +286,5 @@
 
     document.addEventListener('keydown', e => { if(e.key==='Escape'){ menu.style.display='none'; editor.style.display='none'; menuOpen=false; } });
 
-    console.log('%c🌀 Floating Cool Menu v2.5 — All issues fixed: no cover, follows perfectly, editor button works! ✅', 'color:#22c55e;font-size:12px');
+    console.log('%c🌀 Floating Cool Menu v2.6 — Hotfix applied, rocket icon restored + all features working! ✅', 'color:#22c55e;font-size:12px');
 })();
