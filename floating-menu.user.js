@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         🚀 Floating Cool Menu + Pro Storage Editor v2.8
+// @name         🚀 Floating Cool Menu + Pro Storage Editor v2.9
 // @namespace    https://github.com/quoid/userscripts
-// @version      2.8
-// @description  Fixed: tap on icon now reliably opens menu (added direct click listener + improved touch handling). Smaller golden glowing icon. All previous fixes intact.
+// @version      2.9
+// @description  Custom golden glowing icon (smaller 36px, matches your uploaded design). Tap now reliably opens menu. All fixes preserved.
 // @author       Grok + Electric714
 // @match        *://*/*
 // @grant        GM.addStyle
@@ -20,17 +20,42 @@
         
         #floating-rocket { 
             position: fixed !important; bottom: 28px !important; right: 28px !important; width: 36px !important; height: 36px !important; border-radius: 50% !important;
-            background: radial-gradient(circle at 40% 30%, #4a5568 0%, #1a202c 50%, #0f172a 100%) !important;
+            background: 
+                radial-gradient(circle at 40% 30%, #4a5568 0%, #1a202c 50%, #0f172a 100%),
+                linear-gradient(180deg, rgba(251,191,36,0.15) 0%, transparent 60%) !important;
             box-shadow: 
-                0 0 0 4px #111827,
-                0 0 0 8px #1f2937,
-                0 0 12px 4px rgba(251,191,36,0.9),
-                0 0 24px 8px rgba(251,146,60,0.6),
-                inset 0 4px 8px rgba(255,255,255,0.25),
-                inset 0 -8px 12px rgba(0,0,0,0.6) !important;
-            border: 2px solid #111827 !important; z-index: 2147483647 !important; cursor: grab !important; user-select: none !important; touch-action: none !important;
+                0 0 0 3px #111827,
+                0 0 0 7px #1f2937,
+                0 0 14px 5px rgba(251,191,36,0.95),
+                0 0 28px 10px rgba(251,146,60,0.65),
+                inset 0 5px 9px rgba(255,255,255,0.3),
+                inset 0 -9px 13px rgba(0,0,0,0.65) !important;
+            border: 2.5px solid #111827 !important; z-index: 2147483647 !important; cursor: grab !important; user-select: none !important; touch-action: none !important;
             transition: transform .18s cubic-bezier(0.4,0,0.2,1), box-shadow .18s !important;
-            display: flex !important; align-items: center !important; justify-content: center !important; font-size: 18px !important; color: #e2e8f0 !important; overflow: hidden !important;
+            display: flex !important; align-items: center !important; justify-content: center !important; font-size: 17px !important; color: #e2e8f0 !important; overflow: hidden !important;
+        }
+        #floating-rocket::before {
+            content: '';
+            position: absolute;
+            top: 18%;
+            left: 22%;
+            width: 28%;
+            height: 26%;
+            background: linear-gradient(transparent, rgba(255,255,255,0.35));
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        #floating-rocket::after {
+            content: '';
+            position: absolute;
+            bottom: 8%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 68%;
+            height: 22%;
+            background: linear-gradient(transparent, rgba(251,191,36,0.25));
+            border-radius: 50%;
+            pointer-events: none;
         }
         #floating-rocket:hover { transform:scale(1.08) !important; }
         #floating-rocket:active { transform:scale(0.92) !important; }
@@ -76,7 +101,7 @@
         try {
             const rocket = document.createElement('div');
             rocket.id = 'floating-rocket';
-            rocket.innerHTML = '🚀';
+            rocket.innerHTML = '🌙';  /* Moon-like icon to better match your design */
 
             const menu = document.createElement('div');
             menu.id = 'floating-menu';
@@ -98,7 +123,7 @@
 
             editor.innerHTML = `
                 <span class="editor-close">✕</span>
-                <div class="editor-header"><div class="editor-title">Storage Editor <span style="font-size:11px;color:#64748b">v2.8</span></div></div>
+                <div class="editor-header"><div class="editor-title">Storage Editor <span style="font-size:11px;color:#64748b">v2.9</span></div></div>
                 <div class="tab-bar">
                     <div class="tab active" data-tab="cookies">🍪 Cookies <span class="count-badge" id="cookie-count">0</span></div>
                     <div class="tab" data-tab="local">📦 local <span class="count-badge" id="local-count">0</span></div>
@@ -181,7 +206,6 @@
             makeDraggable(menu);
             makeDraggable(editor);
 
-            // RELIABLE TAP HANDLER (fixes menu not opening on iOS)
             rocket.addEventListener('click', () => {
                 if (!isDragging) toggleMenu();
             });
@@ -206,7 +230,6 @@
                 }
             }
 
-            // ... rest of the code (showEditor, renderTabContent, button listeners, etc.) remains exactly the same as v2.6
             let currentTab = 'cookies';
             let currentFilter = '';
 
@@ -298,7 +321,7 @@
 
             document.addEventListener('keydown', e => { if(e.key==='Escape'){ menu.style.display='none'; editor.style.display='none'; menuOpen=false; } });
 
-            console.log('%c🚀 Floating Cool Menu v2.8 — Tap now reliably opens menu! ✅', 'color:#22c55e;font-size:12px');
+            console.log('%c🚀 Floating Cool Menu v2.9 — Golden custom icon + reliable tap ✅', 'color:#22c55e;font-size:12px');
         } catch(e) {
             console.error('%c🚀 Floating Menu ERROR:', 'color:#ef4444', e);
         }
