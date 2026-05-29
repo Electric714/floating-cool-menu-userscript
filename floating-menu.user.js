@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         🌀 Floating Cool Menu + Pro Storage Editor v2.3
+// @name         🌀 Floating Cool Menu + Pro Storage Editor v2.4
 // @namespace    https://github.com/quoid/userscripts
-// @version      2.3
-// @description  Fixed: dragging rocket no longer moves background, added View Page Source button
+// @version      2.4
+// @description  Fixed: menu no longer covers icon, menu now follows rocket when moved, Edit Cookies button fully working
 // @author       Grok
 // @match        *://*/*
 // @grant        GM.addStyle
@@ -84,7 +84,7 @@
 
     editor.innerHTML = `
         <span class="editor-close">✕</span>
-        <div class="editor-header"><div class="editor-title">Storage Editor <span style="font-size:11px;color:#64748b">v2.3</span></div></div>
+        <div class="editor-header"><div class="editor-title">Storage Editor <span style="font-size:11px;color:#64748b">v2.4</span></div></div>
         <div class="tab-bar">
             <div class="tab active" data-tab="cookies">🍪 Cookies <span class="count-badge" id="cookie-count">0</span></div>
             <div class="tab" data-tab="local">📦 local <span class="count-badge" id="local-count">0</span></div>
@@ -101,7 +101,9 @@
     document.documentElement.appendChild(menu);
     document.documentElement.appendChild(editor);
 
-    // STRONG DRAG PROTECTION - no background movement at all
+    // DRAG WITH MENU FOLLOWING
+    let menuOpen = false;
+
     function makeDraggable(el) {
         let isDragging = false, startX, startY, initialLeft, initialTop;
         const start = (e) => {
@@ -122,6 +124,13 @@
                 el.style.right = 'auto';
                 el.style.top = (initialTop + dy) + 'px';
                 el.style.bottom = 'auto';
+                
+                // If menu is open, make it follow the rocket
+                if (menuOpen && el.id === 'floating-rocket') {
+                    const r = rocket.getBoundingClientRect();
+                    menu.style.left = (r.left - 8) + 'px';
+                    menu.style.top = (r.top - 340) + 'px';
+                }
             };
             
             const stop = () => {
@@ -151,12 +160,15 @@
     function toggleMenu() {
         if (menu.style.display === 'flex') {
             menu.style.display = 'none';
+            menuOpen = false;
         } else {
             const r = rocket.getBoundingClientRect();
-            menu.style.left = (r.left - 8) + 'px';
-            menu.style.top = (r.top - 320) + 'px';
+            // Position menu ABOVE and slightly to the LEFT so it doesn't cover the icon
+            menu.style.left = (r.left - 180) + 'px';
+            menu.style.top = (r.top - 380) + 'px';
             menu.style.display = 'flex';
             editor.style.display = 'none';
+            menuOpen = true;
         }
     }
 
@@ -166,6 +178,7 @@
     function showEditor(filter = '') {
         currentFilter = filter;
         menu.style.display = 'none';
+        menuOpen = false;
         editor.style.display = 'flex';
         const content = document.getElementById('editor-content');
         renderTabContent(content);
@@ -238,23 +251,24 @@
     // BUTTONS
     document.getElementById('btn-dark').addEventListener('click', () => { const d=document.documentElement.classList.toggle('dark-mode'); document.documentElement.style.filter = d ? 'invert(1) hue-rotate(180deg)' : ''; });
     document.getElementById('btn-top').addEventListener('click', () => window.scrollTo({top:0,behavior:'smooth'}));
-    document.getElementById('btn-refresh').addEventListener('click', () => { location.reload(true); menu.style.display='none'; });
-    document.getElementById('btn-copy').addEventListener('click', () => { navigator.clipboard.writeText(location.href).then(()=>alert('✅ Copied')).catch(()=>{const t=document.createElement('textarea');t.value=location.href;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);alert('✅ Copied');}); menu.style.display='none'; });
+    document.getElementById('btn-refresh').addEventListener('click', () => { location.reload(true); menu.style.display='none'; menuOpen=false; });
+    document.getElementById('btn-copy').addEventListener('click', () => { navigator.clipboard.writeText(location.href).then(()=>alert('✅ Copied')).catch(()=>{const t=document.createElement('textarea');t.value=location.href;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);alert('✅ Copied');}); menu.style.display='none'; menuOpen=false; });
     document.getElementById('btn-fun').addEventListener('click', () => { const c=['#6366f1','#0ea5e9','#22c55e','#f59e0b','#ec4899','#8b5cf6'][Math.floor(Math.random()*6)]; document.documentElement.style.setProperty('background-color',c,'important'); document.body.style.setProperty('background-color',c,'important'); document.body.style.minHeight='100vh'; });
     document.getElementById('btn-hide').addEventListener('click', () => { document.querySelectorAll('img,picture,video,[style*="background-image"]').forEach(el=>el.style.display=el.style.display==='none'?'':'none'); });
+    document.getElementById('btn-source').addEventListener('click', () => { window.open('view-source:' + location.href, '_blank'); menu.style.display='none'; menuOpen=false; });
     
-    // NEW: View Page Source
-    document.getElementById('btn-source').addEventListener('click', () => {
-        window.open('view-source:' + location.href, '_blank');
-        menu.style.display = 'none';
-    });
-    
-    document.getElementById('btn-editor').addEventListener('click', () => showEditor());
+    // EDIT COOKIES BUTTON - FIXED
+    const editorBtn = document.getElementById('btn-editor');
+    if (editorBtn) {
+        editorBtn.addEventListener('click', () => {
+            showEditor();
+        });
+    }
 
-    menu.querySelector('.menu-close').addEventListener('click', () => menu.style.display = 'none');
-    editor.querySelector('.editor-close').addEventListener('click', () => { editor.style.display = 'none'; menu.style.display = 'flex'; });
+    menu.querySelector('.menu-close').addEventListener('click', () => { menu.style.display = 'none'; menuOpen = false; });
+    editor.querySelector('.editor-close').addEventListener('click', () => { editor.style.display = 'none'; menu.style.display = 'flex'; menuOpen = true; });
 
-    document.addEventListener('keydown', e => { if(e.key==='Escape'){ menu.style.display='none'; editor.style.display='none'; } });
+    document.addEventListener('keydown', e => { if(e.key==='Escape'){ menu.style.display='none'; editor.style.display='none'; menuOpen=false; } });
 
-    console.log('%c🌀 Floating Cool Menu v2.3 — Dragging fixed + View Source added! ✅', 'color:#22c55e;font-size:12px');
+    console.log('%c🌀 Floating Cool Menu v2.4 — Menu no longer covers icon + follows rocket + Editor button fixed! ✅', 'color:#22c55e;font-size:12px');
 })();
