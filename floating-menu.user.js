@@ -1,9 +1,9 @@
 // ==UserScript==
-// @name         🌀 Floating Cool Menu + Pro Storage Editor v2.8
+// @name         Floating Cool Menu + Pro Storage Editor v2.9
 // @namespace    https://github.com/quoid/userscripts
-// @version      2.8
-// @description  FIXED: Initial floating icon now properly creates, shows and is fully interactive. Complete draggable rocket for iOS Safari (Userscripts app). Tap/click to open cool menu. Full Pro Storage Editor for cookies, localStorage, sessionStorage with add/edit/delete. Draggable elements, safe-area support, GM.addStyle fallback, touch + mouse redundancy. Menu follows icon position logic.
-// @author       Grok (xAI) - Fixed & Enhanced
+// @version      2.9
+// @description  RESTORED: Icon reverted to original premium glossy black circle with intense orange bottom glow (exact match to reference). No emoji — pure CSS icon. Fully draggable, tap to open menu, Pro Storage Editor intact. iOS Safari + Userscripts optimized.
+// @author       Grok (xAI) - Icon restored per request
 // @match        *://*/*
 // @grant        GM.addStyle
 // @inject-into  content
@@ -33,17 +33,34 @@
         :root { --accent: #6366f1; --bg: #0f172a; --card: #1e2937; --text: #e2e8f0; --success: #22c55e; }
         
         #floating-rocket { 
-            position: fixed; bottom: calc(28px + env(safe-area-inset-bottom)); right: 28px; width: 56px; height: 56px; border-radius: 50%;
-            background: radial-gradient(circle at 40% 30%, #64748b 0%, #334155 50%, #1e2937 100%);
-            box-shadow: 0 0 0 8px #0f172a, 0 0 0 14px #1e2937, 0 25px 50px -15px rgba(0,0,0,0.9),
-                        inset 0 8px 16px rgba(255,255,255,0.3), inset 0 -12px 20px rgba(0,0,0,0.7), 0 0 35px rgba(251,191,36,0.8);
-            border: 3px solid #0f172a; z-index: 9999999; cursor: grab; user-select: none; touch-action: none;
-            transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s;
-            display: flex; align-items: center; justify-content: center; font-size: 28px; color: #f1f5f9; overflow: hidden;
+            position: fixed; bottom: calc(28px + env(safe-area-inset-bottom)); right: 28px; width: 58px; height: 58px; border-radius: 50%;
+            background: #0a0a0a;
+            box-shadow: 
+                0 0 0 5px #111111,
+                0 0 0 10px #1a1a1a,
+                0 25px 55px -12px rgba(0,0,0,0.95),
+                inset 0 12px 22px rgba(255,255,255,0.18),
+                inset 0 -18px 28px rgba(0,0,0,0.85),
+                0 0 45px rgba(251,146,60,0.95),
+                0 0 90px rgba(251,146,60,0.55);
+            border: 2.5px solid #222222;
+            z-index: 9999999; cursor: grab; user-select: none; touch-action: none;
+            transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.22s;
+            display: flex; align-items: center; justify-content: center; overflow: hidden;
             will-change: transform;
         }
-        #floating-rocket:hover { transform: scale(1.1); box-shadow: 0 0 0 8px #0f172a, 0 0 0 14px #1e2937, 0 30px 60px -15px rgba(0,0,0,0.95), 0 0 45px rgba(251,191,36,1); }
-        #floating-rocket:active { transform: scale(0.95); }
+        #floating-rocket:hover { 
+            transform: scale(1.08); 
+            box-shadow: 
+                0 0 0 5px #111111,
+                0 0 0 10px #1a1a1a,
+                0 30px 65px -12px rgba(0,0,0,0.95),
+                inset 0 14px 24px rgba(255,255,255,0.22),
+                inset 0 -20px 30px rgba(0,0,0,0.9),
+                0 0 55px rgba(251,146,60,1),
+                0 0 110px rgba(251,146,60,0.65);
+        }
+        #floating-rocket:active { transform: scale(0.92); }
 
         #floating-menu, #storage-editor {
             position: fixed; background: rgba(15,23,42,0.97); border: 1px solid #475569; border-radius: 20px;
@@ -88,9 +105,9 @@
     function createRocket() {
         rocket = document.createElement('div');
         rocket.id = 'floating-rocket';
-        rocket.innerHTML = '🌀';
-        rocket.style.left = (window.innerWidth - 84) + 'px';
-        rocket.style.top = (window.innerHeight - 84) + 'px';
+        rocket.innerHTML = '';  /* Pure CSS icon - no emoji */
+        rocket.style.left = (window.innerWidth - 86) + 'px';
+        rocket.style.top = (window.innerHeight - 86) + 'px';
         rocket.style.right = 'auto';
         rocket.style.bottom = 'auto';
 
@@ -157,7 +174,7 @@
 
     function endDrag() {
         isDragging = false;
-        rocket.style.transition = 'transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s';
+        rocket.style.transition = 'transform 0.22s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.22s';
         document.removeEventListener('mousemove', doDrag);
         document.removeEventListener('touchmove', doDrag);
         document.removeEventListener('mouseup', endDrag);
@@ -175,7 +192,7 @@
         menu.id = 'floating-menu';
         menu.innerHTML = `
             <div class="menu-header">
-                🌀 Cool Menu
+                Cool Menu
                 <button onclick="document.getElementById('floating-menu').style.display='none'">✕</button>
             </div>
             <div>
@@ -204,8 +221,8 @@
     }
 
     function resetRocketPosition() {
-        rocket.style.left = (window.innerWidth - 84) + 'px';
-        rocket.style.top = (window.innerHeight - 84) + 'px';
+        rocket.style.left = (window.innerWidth - 86) + 'px';
+        rocket.style.top = (window.innerHeight - 86) + 'px';
         localStorage.removeItem('floatingRocketPos');
         if (menu) menu.style.display = 'none';
     }
@@ -364,15 +381,15 @@
             return;
         }
         createRocket();
-        // Auto show a hint on first load (optional)
+        // Subtle glow pulse on first load to highlight the restored icon
         setTimeout(() => {
             if (rocket && !localStorage.getItem('floatingRocketPos')) {
-                rocket.style.boxShadow = '0 0 0 8px #0f172a, 0 0 0 14px #1e2937, 0 25px 50px -15px rgba(0,0,0,0.9), 0 0 55px rgba(163,163,172,0.9)';
-                setTimeout(() => { if(rocket) rocket.style.boxShadow = '0 0 0 8px #0f172a, 0 0 0 14px #1e2937, 0 25px 50px -15px rgba(0,0,0,0.9), inset 0 8px 16px rgba(255,255,255,0.3), inset 0 -12px 20px rgba(0,0,0,0.7), 0 0 35px rgba(251,191,36,0.8)'; }, 1800);
+                rocket.style.boxShadow = '0 0 0 5px #111111, 0 0 0 10px #1a1a1a, 0 25px 55px -12px rgba(0,0,0,0.95), inset 0 12px 22px rgba(255,255,255,0.18), inset 0 -18px 28px rgba(0,0,0,0.85), 0 0 60px rgba(251,146,60,1), 0 0 120px rgba(251,146,60,0.7)';
+                setTimeout(() => { if(rocket) rocket.style.boxShadow = '0 0 0 5px #111111, 0 0 0 10px #1a1a1a, 0 25px 55px -12px rgba(0,0,0,0.95), inset 0 12px 22px rgba(255,255,255,0.18), inset 0 -18px 28px rgba(0,0,0,0.85), 0 0 45px rgba(251,146,60,0.95), 0 0 90px rgba(251,146,60,0.55)'; }, 1600);
             }
-        }, 1200);
+        }, 900);
 
-        console.log('%c🌀 Floating Cool Menu v2.8 — FIXED & READY! Icon shows, draggable, storage editor works perfectly on iOS Safari ✅', 'color:#22c55e; font-size:11px');
+        console.log('%cFloating Cool Menu v2.9 — Icon restored to original glossy black + orange glow ✅', 'color:#f97316; font-size:11px');
     }
 
     init();
